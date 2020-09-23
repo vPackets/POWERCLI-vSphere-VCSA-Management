@@ -1,4 +1,4 @@
-# ANSIBLE-vSphere-VCSA-OVA-Deploy
+# POWERCLI-vSphere-VCSA-Management
 
 
 ## Using Powershell to automatically deploy a VDS on a vSphere 7.0 vCenter automatically
@@ -72,7 +72,7 @@ Deploy.yml is the main playbook to run. It will call each playbooks in order.
 
 #### Code Execution ####
 
-Open vds_creation.ps1 and execute the commands 
+Open vds_creation.ps1 and execute the commands
 
 
 #### TO DO ####
