@@ -29,7 +29,6 @@ I am using Powershell version 7.0.3 with Powercli automatically installed by pws
 ```
 Ubuntu Version :        18.04.3 LTS 
 Powershell:             7.0.3
-VCSA OVA:               7.0.0.10300-16189094
 
 PS /home/nmichel/code/ANSIBLE-NSXT-Deploy> Get-Module -Name VMware.* | Select-Object -Property Name,Version       
 
