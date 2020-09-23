@@ -4,37 +4,27 @@ Find-Module -Name VMware.PowerCLI
 Get-Module VMware* -ListAvailable
 
 
-
 # Certificate and connection to vCenter
 Set-PowerCLIConfiguration -InvalidCertificateAction:Ignore
 Connect-VIServer srv-vcenter-01.megasp.net                
 
-# Tests to learn Powercli ....
-Get-VM
-Get-VMHost
-Get-VirtualSwitch
-Get-VirtualSwitch | Format-Table Name, Datacenter,MTU,VMHost
-Get-Datacenter -Name ATX-01
-Get-Datacenter -Name ATX-01 | Get-VM
-Get-Datacenter -Name ATX-01 | Get-VDSwitch
-
-
-
-
 # Variable assignement ATX-01 => $DC
 $DC = Get-Datacenter -Name ATX-01
-
 
 # Variable assignement Hosts
 $vmhosts = $DC | Get-VMHost
 
+
+########## VDS CREATION ##########
+
 # Variable Assignement VDS Name
 $VDS = "ATX-VDS"
-#$VDSNAME = Get-VDSwitch $VDS
-
 
 # VDS Creation in DC $DC with Name $VDS 
 New-VDSwitch -Name $VDS -Location $DC -NumUplinkPorts 4 -Version 7.0.0 -Mtu 9000 -LinkDiscoveryProtocol CDP -LinkDiscoveryProtocolOperation Both -ContactName "Nicolas MICHEL"  -ContactDetails "itops@customer.com"
+
+
+########## DVPG CREATION ##########
 
 # Port group creation within vDS $VDS Active links: 1,2 - Unused: 3,4
 Get-VDSwitch $VDS | New-VDPortgroup -name "DPG-VLAN100-MGMT-INFRASTRUCTURE" | Get-VDUplinkTeamingPolicy | Set-VDUplinkTeamingPolicy -ActiveUplinkPort 'dvUplink1','dvUplink2' -UnusedUplinkPort​​ 'dvUplink3','dvUplink4'
@@ -50,12 +40,18 @@ $DPG_TEP_EDGE_VLAN_ID = "120"
 Get-VDSwitch $VDS | New-VDPortgroup -name $DPG_TEP_EDGE_NAME | Get-VDUplinkTeamingPolicy | Set-VDUplinkTeamingPolicy -ActiveUplinkPort 'dvUplink3','dvUplink4' -UnusedUplinkPort​​ 'dvUplink1','dvUplink2'
 Set-VDVlanConfiguration -VDPortgroup $DPG_TEP_EDGE_NAME -VlanId $DPG_TEP_EDGE_VLAN_ID
 
+
+########## ASSIGNING DVS TO HOSTS ##########
+
 # Echo
 Write-Host "Adding" $vmHosts "to" $VDS
 
 # Add the hosts $vmhosts (ALL 3 ESXi) into the vDS
 Get-VDSwitch -Name $VDS | Add-VDSwitchVMHost -VMHost $vmHosts
 
+
+
+########## COMPUTE CLUSTER VMK0 MIGRATION ##########
 
 # Compute cluster definition + Hosts
 $compute = $DC | Get-Cluster "Compute"
@@ -69,7 +65,7 @@ $vmhostNetworkAdapter = Get-VMHost $vm_compute | Get-VMHostNetworkAdapter -Physi
 Add-VDSwitchPhysicalNetworkAdapter -DistributedSwitch $VDS -VMHostNetworkAdapter $vmhostNetworkAdapter -Confirm:$false
 
 
-#Migrate VMK0 to vmni1 (Attention, vmnic1 is mapped to dvuplink1 now ! :( ))
+#Migrate VMK0 to vmni0 (Attention, vmnic1 is mapped to dvuplink1 now ! :( ))
 $vmk0 = $DC | Get-Cluster "Compute" | Get-VMHost | Get-VMHostNetworkAdapter -Name vmk0
 Set-VMHostNetworkAdapter -PortGroup "DPG-VLAN100-MGMT-INFRASTRUCTURE" -VirtualNic $vmk0 -Confirm:$false | Out-Null
 
@@ -78,9 +74,13 @@ Set-VMHostNetworkAdapter -PortGroup "DPG-VLAN100-MGMT-INFRASTRUCTURE" -VirtualNi
 $vmhostNetworkAdapter = Get-VMHost $vm_compute | Get-VMHostNetworkAdapter -Physical -Name vmnic1 | Remove-VirtualSwitchPhysicalNetworkAdapter -Confirm:$false
 $vmhostNetworkAdapter = Get-VMHost $vm_compute | Get-VMHostNetworkAdapter -Physical -Name vmnic1
 
-# Add vmnic 0 to vds 
+# Add vmnic 1 to vds 
 Add-VDSwitchPhysicalNetworkAdapter -DistributedSwitch $VDS -VMHostNetworkAdapter $vmhostNetworkAdapter -Confirm:$false
 
+
+
+
+########## EDGE CLUSTER VMK0 MIGRATION ##########
 
 
 # Management - Edge cluster definition + Hosts
@@ -102,7 +102,6 @@ Set-VMHostNetworkAdapter -PortGroup "DPG-VLAN100-MGMT-INFRASTRUCTURE" -VirtualNi
 
 #Migrate virtual machine from hosts on edge to DVS Port group
 Get-VM | Get-NetworkAdapter | Set-NetworkAdapter -NetworkName "DPG-VLAN100-MGMT-INFRASTRUCTURE" -Confirm:$false
-
 
 
 # Remove vmnic 1,2,3 from VSS on hosts in cluster edge  - Add 

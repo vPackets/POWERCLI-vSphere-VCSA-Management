@@ -1,7 +1,7 @@
 # ANSIBLE-vSphere-VCSA-OVA-Deploy
 
 
-## Using Ansible to deploy a vSphere 7.0 vCenter automatically
+## Using Powershell to automatically deploy a VDS on a vSphere 7.0 vCenter automatically
 by Nicolas MICHEL [@vpackets](https://twitter.com/vpackets) / [LinkedIn](https://www.linkedin.com/in/mclnicolas/) / [Blog](http://vpackets.net/) 
 
 _**This disclaimer informs readers that the views, thoughts, and opinions expressed in this series of posts belong solely to the author, and not necessarily to the author’s employer, organization, committee or other group or individual.**_
@@ -72,7 +72,7 @@ Deploy.yml is the main playbook to run. It will call each playbooks in order.
 
 #### Code Execution ####
 
-Run each command one by one.
+Open vds_creation.ps1 and execute the commands 
 
 
 #### TO DO ####
