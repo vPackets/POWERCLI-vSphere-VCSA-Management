@@ -27,17 +27,17 @@ New-VDSwitch -Name $VDS -Location $DC -NumUplinkPorts 4 -Version 7.0.0 -Mtu 9000
 ########## DVPG CREATION ##########
 
 # Port group creation within vDS $VDS Active links: 1,2 - Unused: 3,4
-Get-VDSwitch $VDS | New-VDPortgroup -name "DPG-VLAN100-MGMT-INFRASTRUCTURE" | Get-VDUplinkTeamingPolicy | Set-VDUplinkTeamingPolicy -ActiveUplinkPort 'dvUplink1','dvUplink2' -UnusedUplinkPort​​ 'dvUplink3','dvUplink4'
+Get-VDSwitch $VDS | New-VDPortgroup -name "DPG-VLAN100-MGMT-INFRASTRUCTURE" | Get-VDUplinkTeamingPolicy | Set-VDUplinkTeamingPolicy -ActiveUplinkPort 'dvUplink1','dvUplink2','dvUplink3','dvUplink4'
 Set-VDVlanConfiguration -VDPortgroup "DPG-VLAN100-MGMT-INFRASTRUCTURE" -VlanId "100"
 
 # Port group creation within vDS $VDS Active links: 3,4 - Unused: 1,2
-Get-VDSwitch $VDS | New-VDPortgroup -name "DPG-VLAN110-TEP-COMPUTE" | Get-VDUplinkTeamingPolicy | Set-VDUplinkTeamingPolicy -ActiveUplinkPort 'dvUplink3','dvUplink4' -UnusedUplinkPort​​ 'dvUplink1','dvUplink2'
+Get-VDSwitch $VDS | New-VDPortgroup -name "DPG-VLAN110-TEP-COMPUTE" | Get-VDUplinkTeamingPolicy | Set-VDUplinkTeamingPolicy -ActiveUplinkPort 'dvUplink1','dvUplink2'
 Set-VDVlanConfiguration -VDPortgroup "DPG-VLAN110-TEP-COMPUTE" -VlanId "110"
 
 # Port group creation within vDS $VDS Active links: 3,4 - Unused: 1,2 - OTHER METHOD
 $DPG_TEP_EDGE_NAME = "DPG-VLAN120-TEP-EDGE"
 $DPG_TEP_EDGE_VLAN_ID = "120"
-Get-VDSwitch $VDS | New-VDPortgroup -name $DPG_TEP_EDGE_NAME | Get-VDUplinkTeamingPolicy | Set-VDUplinkTeamingPolicy -ActiveUplinkPort 'dvUplink3','dvUplink4' -UnusedUplinkPort​​ 'dvUplink1','dvUplink2'
+Get-VDSwitch $VDS | New-VDPortgroup -name $DPG_TEP_EDGE_NAME | Get-VDUplinkTeamingPolicy | Set-VDUplinkTeamingPolicy -ActiveUplinkPort 'dvUplink1','dvUplink2' 
 Set-VDVlanConfiguration -VDPortgroup $DPG_TEP_EDGE_NAME -VlanId $DPG_TEP_EDGE_VLAN_ID
 
 
